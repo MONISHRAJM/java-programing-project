@@ -1,0 +1,102 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.Scanner;
+
+public class LinkShortener {
+    private Map<String, String> urlMap;
+    private Map<String, String> shortUrlMap;
+    private static final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final int SHORT_URL_LENGTH = 6;
+
+    public LinkShortener() {
+        urlMap = new HashMap<>();
+        shortUrlMap = new HashMap<>();
+    }
+
+    public String shortenURL(String longUrl) {
+        if (longUrl == null || longUrl.isEmpty()) {
+            throw new IllegalArgumentException("Invalid long URL");
+        }
+
+        if (urlMap.containsKey(longUrl)) {
+            return urlMap.get(longUrl);
+        }
+
+        String shortUrl;
+        do {
+            shortUrl = generateShortUrl();
+        } while (shortUrlMap.containsKey(shortUrl));
+
+        urlMap.put(longUrl, shortUrl);
+        shortUrlMap.put(shortUrl, longUrl);
+
+        return shortUrl;
+    }
+
+    private String generateShortUrl() {
+        StringBuilder shortUrl = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < SHORT_URL_LENGTH; i++) {
+            shortUrl.append(BASE62.charAt(random.nextInt(BASE62.length())));
+        }
+        return shortUrl.toString();
+    }
+
+    public String expandURL(String shortUrl) {
+        if (shortUrl == null || shortUrl.isEmpty()) {
+            throw new IllegalArgumentException("Invalid short URL");
+        }
+
+        if (shortUrlMap.containsKey(shortUrl)) {
+            return shortUrlMap.get(shortUrl);
+        } else {
+            return "Invalid short URL";
+        }
+    }
+
+    public static void main(String[] args) {
+        LinkShortener linkShortener = new LinkShortener();
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\nLink Shortener Menu:");
+            System.out.println("1. Shorten URL");
+            System.out.println("2. Expand URL");
+            System.out.println("3. Exit");
+            System.out.print("Choose an option: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter long URL: ");
+                    String longUrl = scanner.nextLine();
+                    try {
+                        String shortUrl = linkShortener.shortenURL(longUrl);
+                        System.out.println("Short URL: " + shortUrl);
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 2:
+                    System.out.print("Enter short URL: ");
+                    String shortUrl = scanner.nextLine();
+                    try {
+                        String expandedUrl = linkShortener.expandURL(shortUrl);
+                        System.out.println("Long URL: " + expandedUrl);
+                    } catch (IllegalArgumentException e) {
+                        System.out.println(e.getMessage());
+                    }
+                    break;
+                case 3:
+                    System.out.println("Exiting. Goodbye!");
+                    scanner.close();
+                    return;
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+}
